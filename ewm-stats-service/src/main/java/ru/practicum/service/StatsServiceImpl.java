@@ -24,7 +24,11 @@ public class StatsServiceImpl implements StatsService {
         hit.setUri(hitDto.getUri());
         hit.setIp(hitDto.getIp());
         hit.setTimestamp(hitDto.getTimestamp());
-        hitRepository.save(hit);
+
+        Hit savedHit = hitRepository.save(hit);
+
+        hitDto.setId(savedHit.getId());
+
         return hitDto;
     }
 
