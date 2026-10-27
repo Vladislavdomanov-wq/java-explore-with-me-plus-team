@@ -6,6 +6,7 @@ import ru.practicum.client.StatsClient;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.ViewStats;
+import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.model.EventState;
@@ -32,7 +33,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto getPublishedEvent(Long id) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
-                .orElseThrow(() -> new RuntimeException("Event not found: " + id)); // TODO: кастомное исключение + 404
+                .orElseThrow(() -> new NotFoundException("Event not found: " + id));
         return EventMapper.toFullDto(event, getViews("/events/" + id));
     }
 
