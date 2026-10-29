@@ -85,8 +85,8 @@ public class RequestServiceImpl implements RequestService {
         Request request = requestRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
 
-        if (request.getStatus() != RequestStatus.PENDING) {
-            throw new ConflictException("Отменить можно только заявку в статусе PENDING");
+        if (request.getStatus() == RequestStatus.CANCELED) {
+            throw new ConflictException("Заявка уже отменена");
         }
 
         request.setStatus(RequestStatus.CANCELED);
