@@ -36,9 +36,12 @@ public class EventController {
             @RequestParam(required = false) Boolean onlyAvailable,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") Integer from,
-            @RequestParam(defaultValue = "10") Integer size) {
-        return eventService.getPublishedEvents(text, categories, paid, rangeStart, rangeEnd,
+            @RequestParam(defaultValue = "10") Integer size,
+            HttpServletRequest request) {
+        List<EventShortDto> events = eventService.getPublishedEvents(text, categories, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size);
+        statsRecorder.record(request);
+        return events;
     }
 
     @GetMapping("/{id}")
