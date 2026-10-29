@@ -32,7 +32,7 @@ public class Event {
     @Column(nullable = false, length = 2000)
     private String annotation;
 
-    @Column(name = "category_id")
+    @Column(name = "category_id", nullable = false)  // добавил nullable = false
     private Long categoryId;
 
     @Column(name = "created_on", nullable = false)
@@ -44,8 +44,14 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
-    @Column(name = "initiator_id")
+    @Column(name = "initiator_id", nullable = false)  // добавил nullable = false
     private Long initiatorId;
+
+    @Column(nullable = false)
+    private Float lat;
+
+    @Column(nullable = false)
+    private Float lon;
 
     @Column(nullable = false)
     private Boolean paid;
