@@ -9,12 +9,12 @@ public final class EventMapper {
     private EventMapper() {
     }
 
-    public static EventShortDto toShortDto(Event e, long views) {
+    public static EventShortDto toShortDto(Event e, long confirmedRequests, long views) {
         return EventShortDto.builder()
                 .id(e.getId())
                 .annotation(e.getAnnotation())
                 .categoryId(e.getCategoryId())
-                .confirmedRequests(0L)   // TODO: когда появится Request
+                .confirmedRequests(confirmedRequests)
                 .eventDate(e.getEventDate())
                 .initiatorId(e.getInitiatorId())
                 .paid(e.getPaid())
@@ -23,12 +23,12 @@ public final class EventMapper {
                 .build();
     }
 
-    public static EventFullDto toFullDto(Event e, long views) {
+    public static EventFullDto toFullDto(Event e, long confirmedRequests, long views) {
         return EventFullDto.builder()
                 .id(e.getId())
                 .annotation(e.getAnnotation())
                 .categoryId(e.getCategoryId())
-                .confirmedRequests(0L)   // TODO
+                .confirmedRequests(confirmedRequests)
                 .createdOn(e.getCreatedOn())
                 .description(e.getDescription())
                 .eventDate(e.getEventDate())
