@@ -260,6 +260,9 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> searchEvents(String text, List<Long> categories, Boolean paid,
                                             String rangeStart, String rangeEnd, Boolean onlyAvailable,
                                             String sort, Integer from, Integer size) {
+
+        validateRange(rangeStart, rangeEnd);
+
         String sortValue = (sort != null && !sort.isBlank()) ? sort.toUpperCase() : "EVENT_DATE";
 
         if (!"EVENT_DATE".equals(sortValue) && !"VIEWS".equals(sortValue)) {
@@ -346,5 +349,15 @@ public class EventServiceImpl implements EventService {
                 true
         );
         return stats.isEmpty() ? 0L : stats.get(0).getHits();
+    }
+
+    private void validateRange(String rangeStart, String rangeEnd) {
+        if (rangeStart != null && rangeEnd != null) {
+            LocalDateTime start = LocalDateTime.parse(rangeStart, FORMATTER);
+            LocalDateTime end = LocalDateTime.parse(rangeEnd, FORMATTER);
+            if (start.isAfter(end)) {
+                throw new ValidationException("rangeStart must be before rangeEnd");
+            }
+        }
     }
 }
