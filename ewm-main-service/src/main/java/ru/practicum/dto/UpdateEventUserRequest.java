@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -19,15 +20,16 @@ import java.time.LocalDateTime;
 @Builder
 public class UpdateEventUserRequest {
 
-    @Size(min = 20, max = 2000)
+    @Size(min = 20, max = 2000, message = "Аннотация должна быть от 20 до 2000 символов")
     private String annotation;
 
     private Long category;
 
-    @Size(min = 20, max = 7000)
+    @Size(min = 20, max = 7000, message = "Описание должно быть от 20 до 7000 символов")
     private String description;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 
     @Valid
@@ -35,13 +37,13 @@ public class UpdateEventUserRequest {
 
     private Boolean paid;
 
-    @PositiveOrZero
+    @PositiveOrZero(message = "Лимит участников не может быть отрицательным")
     private Integer participantLimit;
 
     private Boolean requestModeration;
 
-    private String stateAction;
+    private String stateAction; // SEND_TO_REVIEW или CANCEL_REVIEW
 
-    @Size(min = 3, max = 120)
+    @Size(min = 3, max = 120, message = "Заголовок должен быть от 3 до 120 символов")
     private String title;
 }

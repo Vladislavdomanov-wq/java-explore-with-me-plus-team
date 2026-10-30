@@ -46,21 +46,6 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> "Field: " + error.getField() + ". Error: " + error.getDefaultMessage())
-                .collect(Collectors.joining("; "));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "status", "BAD_REQUEST",
-                        "reason", "Incorrectly made request.",
-                        "message", message,
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
-    }
-
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -70,6 +55,27 @@ public class GlobalExceptionHandler {
                         "message", ex.getMessage(),
                         "timestamp", LocalDateTime.now().format(FORMATTER),
                         "errors", Collections.emptyList()
+                ));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "status", "BAD_REQUEST",
+                        "reason", "Incorrectly made request.",
+                        "message", message,
+                        "timestamp", LocalDateTime.now().format(FORMATTER),
+                        "errors", ex.getBindingResult().getFieldErrors().stream()
+                                .map(error -> Map.of(
+                                        "field", error.getField(),
+                                        "message", error.getDefaultMessage()
+                                ))
+                                .collect(Collectors.toList())
                 ));
     }
 

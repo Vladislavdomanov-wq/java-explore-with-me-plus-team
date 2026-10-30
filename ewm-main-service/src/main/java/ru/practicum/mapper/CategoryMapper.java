@@ -1,17 +1,21 @@
 package ru.practicum.mapper;
 
 import ru.practicum.dto.CategoryDto;
+import ru.practicum.dto.NewCategoryDto;
 import ru.practicum.model.Category;
 
-public final class CategoryMapper {
+public class CategoryMapper {
 
-    private CategoryMapper() {
+    public static Category toCategory(NewCategoryDto dto) {
+        return Category.builder()
+                .name(dto.getName())
+                .build();
     }
 
-    public static CategoryDto toDto(Category category) {
-        return CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
+    public static CategoryDto toCategoryDto(Category category) {
+        return new CategoryDto(
+                category.getId(),
+                category.getName()
+        );
     }
 }

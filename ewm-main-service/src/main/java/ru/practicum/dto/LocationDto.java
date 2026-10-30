@@ -14,9 +14,9 @@ import lombok.Setter;
 @Builder
 public class LocationDto {
 
-    @NotNull
+    @NotNull(message = "Широта обязательна")
     private Float lat;
 
-    @NotNull
+    @NotNull(message = "Долгота обязательна")
     private Float lon;
 }
