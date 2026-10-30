@@ -204,10 +204,18 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
         if (dto.getEventDate() != null) {
-            if (dto.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+            LocalDateTime newDate = dto.getEventDate();
+            LocalDateTime now = LocalDateTime.now();
+
+            if (newDate.isBefore(now)) {
+                throw new ValidationException("Дата начала события не может быть в прошлом");
+            }
+
+            if (newDate.isBefore(now.plusHours(1))) {
                 throw new ConflictException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
             }
-            event.setEventDate(dto.getEventDate());
+
+            event.setEventDate(newDate);
         }
 
         if (dto.getAnnotation() != null) event.setAnnotation(dto.getAnnotation());
@@ -252,7 +260,13 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> searchEvents(String text, List<Long> categories, Boolean paid,
                                             String rangeStart, String rangeEnd, Boolean onlyAvailable,
                                             String sort, Integer from, Integer size) {
-        Sort sorting = "VIEWS".equals(sort)
+        String sortValue = (sort != null && !sort.isBlank()) ? sort.toUpperCase() : "EVENT_DATE";
+
+        if (!"EVENT_DATE".equals(sortValue) && !"VIEWS".equals(sortValue)) {
+            throw new ValidationException("Unknown sort: " + sort);
+        }
+
+        Sort sorting = "VIEWS".equals(sortValue)
                 ? Sort.by(Sort.Direction.DESC, "id")
                 : Sort.by(Sort.Direction.DESC, "eventDate");
 
