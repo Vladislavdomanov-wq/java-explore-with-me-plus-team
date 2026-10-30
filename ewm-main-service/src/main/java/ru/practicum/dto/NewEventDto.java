@@ -42,11 +42,14 @@ public class NewEventDto {
     @Valid
     private LocationDto location;
 
+    @Builder.Default
     private Boolean paid = false;
 
     @PositiveOrZero(message = "Лимит участников не может быть отрицательным")
+    @Builder.Default
     private Integer participantLimit = 0;
 
+    @Builder.Default
     private Boolean requestModeration = true;
 
     @NotBlank(message = "Заголовок не может быть пустым")
