@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.model.StateAction;
 
 @Getter
 @Setter
@@ -32,7 +33,7 @@ public class UpdateEventAdminRequest {
 
     private Boolean requestModeration;
 
-    private String stateAction;
+    private StateAction stateAction;
 
     @Size(min = 3, max = 120, message = "Заголовок должен быть от 3 до 120 символов")
     private String title;
