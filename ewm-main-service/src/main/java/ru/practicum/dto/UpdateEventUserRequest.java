@@ -43,7 +43,7 @@ public class UpdateEventUserRequest {
 
     private Boolean requestModeration;
 
-    private StateAction stateAction; // SEND_TO_REVIEW или CANCEL_REVIEW
+    private StateAction stateAction;
 
     @Size(min = 3, max = 120, message = "Заголовок должен быть от 3 до 120 символов")
     private String title;

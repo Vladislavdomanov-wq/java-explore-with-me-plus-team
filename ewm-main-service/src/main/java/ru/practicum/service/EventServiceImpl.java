@@ -152,9 +152,9 @@ public class EventServiceImpl implements EventService {
             event.setCategory(category);
         }
 
-        if (StateAction.SEND_TO_REVIEW.name().equals(dto.getStateAction())) {
+        if (dto.getStateAction() == StateAction.SEND_TO_REVIEW) {
             event.setState(EventState.PENDING);
-        } else if (StateAction.CANCEL_REVIEW.name().equals(dto.getStateAction())) {
+        } else if (dto.getStateAction() == StateAction.CANCEL_REVIEW) {
             event.setState(EventState.CANCELED);
         }
 
@@ -190,19 +190,17 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
-        if (dto.getEventDate() != null) {
-            LocalDateTime newDate = dto.getEventDate();
-            LocalDateTime now = LocalDateTime.now();
-
-            if (newDate.isBefore(now)) {
-                throw new ValidationException("Дата начала события не может быть в прошлом");
+        if (dto.getStateAction() == StateAction.PUBLISH_EVENT) {
+            if (event.getState() != EventState.PENDING) {
+                throw new ConflictException("Можно публиковать только события в состоянии ожидания публикации");
             }
-
-            if (newDate.isBefore(now.plusHours(1))) {
-                throw new ConflictException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
+            event.setState(EventState.PUBLISHED);
+            event.setPublishedOn(LocalDateTime.now());
+        } else if (dto.getStateAction() == StateAction.REJECT_EVENT) {
+            if (event.getState() == EventState.PUBLISHED) {
+                throw new ConflictException("Нельзя отклонить уже опубликованное событие");
             }
-
-            event.setEventDate(newDate);
+            event.setState(EventState.CANCELED);
         }
 
         if (dto.getAnnotation() != null) event.setAnnotation(dto.getAnnotation());
@@ -219,19 +217,6 @@ public class EventServiceImpl implements EventService {
             Category category = categoryRepository.findById(dto.getCategory())
                     .orElseThrow(() -> new NotFoundException("Категория с id=" + dto.getCategory() + " не найдена"));
             event.setCategory(category);
-        }
-
-        if (StateAction.PUBLISH_EVENT.name().equals(dto.getStateAction())) {
-            if (event.getState() != EventState.PENDING) {
-                throw new ConflictException("Можно публиковать только события в состоянии ожидания публикации");
-            }
-            event.setState(EventState.PUBLISHED);
-            event.setPublishedOn(LocalDateTime.now());
-        } else if (StateAction.REJECT_EVENT.name().equals(dto.getStateAction())) {
-            if (event.getState() == EventState.PUBLISHED) {
-                throw new ConflictException("Нельзя отклонить уже опубликованное событие");
-            }
-            event.setState(EventState.CANCELED);
         }
 
         Event saved = eventRepository.save(event);
