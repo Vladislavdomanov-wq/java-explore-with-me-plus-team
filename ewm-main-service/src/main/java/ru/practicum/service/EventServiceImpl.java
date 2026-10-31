@@ -9,12 +9,22 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.client.StatsClient;
-import ru.practicum.dto.*;
+import ru.practicum.dto.EventFullDto;
+import ru.practicum.dto.EventShortDto;
+import ru.practicum.dto.NewEventDto;
+import ru.practicum.dto.UpdateEventAdminRequest;
+import ru.practicum.dto.UpdateEventUserRequest;
+import ru.practicum.dto.ViewStats;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.EventMapper;
-import ru.practicum.model.*;
+import ru.practicum.model.Category;
+import ru.practicum.model.Event;
+import ru.practicum.model.EventState;
+import ru.practicum.model.RequestStatus;
+import ru.practicum.model.StateAction;
+import ru.practicum.model.User;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.EventSpecification;
@@ -74,10 +84,7 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepository.save(event);
         long views = getViewsForEvent(saved.getId());
         long confirmed = getConfirmedRequests(saved.getId());
-        return EventMapper.toFullDto(saved,
-                new CategoryDto(category.getId(), category.getName()),
-                new UserShortDto(user.getId(), user.getName()),
-                confirmed, views);
+        return EventMapper.toFullDto(saved, confirmed, views);
     }
 
     @Override
@@ -90,14 +97,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> views = getViewsMap(events);
 
         return events.stream()
-                .map(e -> {
-                    long v = views.getOrDefault(e.getId(), 0L);
-                    long confirmed = getConfirmedRequests(e.getId());
-                    return EventMapper.toShortDto(e,
-                            new CategoryDto(e.getCategory().getId(), e.getCategory().getName()),
-                            new UserShortDto(e.getInitiator().getId(), e.getInitiator().getName()),
-                            confirmed, v);
-                })
+                .map(e -> EventMapper.toShortDto(e, getConfirmedRequests(e.getId()), views.getOrDefault(e.getId(), 0L)))
                 .collect(Collectors.toList());
     }
 
@@ -112,10 +112,7 @@ public class EventServiceImpl implements EventService {
 
         long views = getViewsForEvent(eventId);
         long confirmed = getConfirmedRequests(eventId);
-        return EventMapper.toFullDto(event,
-                new CategoryDto(event.getCategory().getId(), event.getCategory().getName()),
-                new UserShortDto(event.getInitiator().getId(), event.getInitiator().getName()),
-                confirmed, views);
+        return EventMapper.toFullDto(event, confirmed, views);
     }
 
     @Override
@@ -155,19 +152,16 @@ public class EventServiceImpl implements EventService {
             event.setCategory(category);
         }
 
-        if ("SEND_TO_REVIEW".equals(dto.getStateAction())) {
+        if (dto.getStateAction() == StateAction.SEND_TO_REVIEW) {
             event.setState(EventState.PENDING);
-        } else if ("CANCEL_REVIEW".equals(dto.getStateAction())) {
+        } else if (dto.getStateAction() == StateAction.CANCEL_REVIEW) {
             event.setState(EventState.CANCELED);
         }
 
         Event saved = eventRepository.save(event);
         long views = getViewsForEvent(eventId);
         long confirmed = getConfirmedRequests(eventId);
-        return EventMapper.toFullDto(saved,
-                new CategoryDto(saved.getCategory().getId(), saved.getCategory().getName()),
-                new UserShortDto(saved.getInitiator().getId(), saved.getInitiator().getName()),
-                confirmed, views);
+        return EventMapper.toFullDto(saved, confirmed, views);
     }
 
     @Override
@@ -186,14 +180,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> views = getViewsMap(events);
 
         return events.stream()
-                .map(e -> {
-                    long v = views.getOrDefault(e.getId(), 0L);
-                    long confirmed = getConfirmedRequests(e.getId());
-                    return EventMapper.toFullDto(e,
-                            new CategoryDto(e.getCategory().getId(), e.getCategory().getName()),
-                            new UserShortDto(e.getInitiator().getId(), e.getInitiator().getName()),
-                            confirmed, v);
-                })
+                .map(e -> EventMapper.toFullDto(e, getConfirmedRequests(e.getId()), views.getOrDefault(e.getId(), 0L)))
                 .collect(Collectors.toList());
     }
 
@@ -233,14 +220,13 @@ public class EventServiceImpl implements EventService {
                     .orElseThrow(() -> new NotFoundException("Категория с id=" + dto.getCategory() + " не найдена"));
             event.setCategory(category);
         }
-
-        if ("PUBLISH_EVENT".equals(dto.getStateAction())) {
+        if (dto.getStateAction() == StateAction.PUBLISH_EVENT) {
             if (event.getState() != EventState.PENDING) {
                 throw new ConflictException("Можно публиковать только события в состоянии ожидания публикации");
             }
             event.setState(EventState.PUBLISHED);
             event.setPublishedOn(LocalDateTime.now());
-        } else if ("REJECT_EVENT".equals(dto.getStateAction())) {
+        } else if (dto.getStateAction() == StateAction.REJECT_EVENT) {
             if (event.getState() == EventState.PUBLISHED) {
                 throw new ConflictException("Нельзя отклонить уже опубликованное событие");
             }
@@ -250,10 +236,7 @@ public class EventServiceImpl implements EventService {
         Event saved = eventRepository.save(event);
         long views = getViewsForEvent(eventId);
         long confirmed = getConfirmedRequests(eventId);
-        return EventMapper.toFullDto(saved,
-                new CategoryDto(saved.getCategory().getId(), saved.getCategory().getName()),
-                new UserShortDto(saved.getInitiator().getId(), saved.getInitiator().getName()),
-                confirmed, views);
+        return EventMapper.toFullDto(saved, confirmed, views);
     }
 
     @Override
@@ -286,14 +269,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> views = getViewsMap(events);
 
         return events.stream()
-                .map(e -> {
-                    long v = views.getOrDefault(e.getId(), 0L);
-                    long confirmed = getConfirmedRequests(e.getId());
-                    return EventMapper.toShortDto(e,
-                            new CategoryDto(e.getCategory().getId(), e.getCategory().getName()),
-                            new UserShortDto(e.getInitiator().getId(), e.getInitiator().getName()),
-                            confirmed, v);
-                })
+                .map(e -> EventMapper.toShortDto(e, getConfirmedRequests(e.getId()), views.getOrDefault(e.getId(), 0L)))
                 .collect(Collectors.toList());
     }
 
@@ -304,10 +280,7 @@ public class EventServiceImpl implements EventService {
 
         long views = getViewsForEvent(id);
         long confirmed = getConfirmedRequests(id);
-        return EventMapper.toFullDto(event,
-                new CategoryDto(event.getCategory().getId(), event.getCategory().getName()),
-                new UserShortDto(event.getInitiator().getId(), event.getInitiator().getName()),
-                confirmed, views);
+        return EventMapper.toFullDto(event, confirmed, views);
     }
 
     private long getConfirmedRequests(Long eventId) {

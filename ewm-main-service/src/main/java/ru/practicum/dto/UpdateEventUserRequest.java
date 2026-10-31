@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.practicum.model.StateAction;
 
 import java.time.LocalDateTime;
 
@@ -42,7 +43,7 @@ public class UpdateEventUserRequest {
 
     private Boolean requestModeration;
 
-    private String stateAction; // SEND_TO_REVIEW или CANCEL_REVIEW
+    private StateAction stateAction; // SEND_TO_REVIEW или CANCEL_REVIEW
 
     @Size(min = 3, max = 120, message = "Заголовок должен быть от 3 до 120 символов")
     private String title;

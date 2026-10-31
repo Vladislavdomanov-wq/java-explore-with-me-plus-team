@@ -1,16 +1,12 @@
 package ru.practicum.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
+import ru.practicum.model.StateAction;
 
 @Getter
 @Setter
@@ -27,20 +23,17 @@ public class UpdateEventAdminRequest {
     @Size(min = 20, max = 7000, message = "Описание должно быть от 20 до 7000 символов")
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime eventDate;
+    private java.time.LocalDateTime eventDate;
 
-    @Valid
     private LocationDto location;
 
     private Boolean paid;
 
-    @PositiveOrZero(message = "Лимит участников не может быть отрицательным")
     private Integer participantLimit;
 
     private Boolean requestModeration;
 
-    private String stateAction;
+    private StateAction stateAction;
 
     @Size(min = 3, max = 120, message = "Заголовок должен быть от 3 до 120 символов")
     private String title;

@@ -10,85 +10,80 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import ru.practicum.dto.ErrorResponseDto;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex) {
+    public ResponseEntity<ErrorResponseDto> handleNotFound(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "status", "NOT_FOUND",
-                        "reason", "The required object was not found.",
-                        "message", ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("NOT_FOUND")
+                        .reason("The required object was not found.")
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(ValidationException ex) {
+    public ResponseEntity<ErrorResponseDto> handleValidation(ValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "status", "BAD_REQUEST",
-                        "reason", "Incorrectly made request.",
-                        "message", ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("BAD_REQUEST")
+                        .reason("Incorrectly made request.")
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
+    public ResponseEntity<ErrorResponseDto> handleConflict(ConflictException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of(
-                        "status", "CONFLICT",
-                        "reason", "Integrity constraint has been violated.",
-                        "message", ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("CONFLICT")
+                        .reason("Integrity constraint has been violated.")
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
+    public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.toList());
+
+        String message = String.join(", ", errors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "status", "BAD_REQUEST",
-                        "reason", "Incorrectly made request.",
-                        "message", message,
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", ex.getBindingResult().getFieldErrors().stream()
-                                .map(error -> Map.of(
-                                        "field", error.getField(),
-                                        "message", error.getDefaultMessage()
-                                ))
-                                .collect(Collectors.toList())
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("BAD_REQUEST")
+                        .reason("Incorrectly made request.")
+                        .message(message)
+                        .timestamp(LocalDateTime.now())
+                        .errors(errors)
+                        .build());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+    public ResponseEntity<ErrorResponseDto> handleDataIntegrity(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of(
-                        "status", "CONFLICT",
-                        "reason", "Integrity constraint has been violated.",
-                        "message", ex.getMessage() == null ? "Integrity constraint has been violated." : ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("CONFLICT")
+                        .reason("Integrity constraint has been violated.")
+                        .message(ex.getMessage() == null ? "Integrity constraint has been violated." : ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 
     @ExceptionHandler({
@@ -97,38 +92,38 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class,
             jakarta.validation.ConstraintViolationException.class
     })
-    public ResponseEntity<Map<String, Object>> handleBadRequest(Exception ex) {
+    public ResponseEntity<ErrorResponseDto> handleBadRequest(Exception ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "status", "BAD_REQUEST",
-                        "reason", "Incorrectly made request.",
-                        "message", ex.getMessage() == null ? "Bad request" : ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("BAD_REQUEST")
+                        .reason("Incorrectly made request.")
+                        .message(ex.getMessage() == null ? "Bad request" : ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
+    public ResponseEntity<ErrorResponseDto> handleNoResourceFound(NoResourceFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "status", "NOT_FOUND",
-                        "reason", "The required object was not found.",
-                        "message", ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("NOT_FOUND")
+                        .reason("The required object was not found.")
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
+    public ResponseEntity<ErrorResponseDto> handleGeneral(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                        "status", "INTERNAL_SERVER_ERROR",
-                        "reason", "Unexpected error.",
-                        "message", ex.getMessage(),
-                        "timestamp", LocalDateTime.now().format(FORMATTER),
-                        "errors", Collections.emptyList()
-                ));
+                .body(ErrorResponseDto.builder()
+                        .status("INTERNAL_SERVER_ERROR")
+                        .reason("Unexpected error.")
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .errors(Collections.emptyList())
+                        .build());
     }
 }

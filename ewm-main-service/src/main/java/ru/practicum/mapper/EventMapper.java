@@ -48,4 +48,24 @@ public final class EventMapper {
                 .views(views)
                 .build();
     }
+
+    public static EventFullDto toFullDto(Event event, long confirmedRequests, long views) {
+        return toFullDto(
+                event,
+                new CategoryDto(event.getCategory().getId(), event.getCategory().getName()),
+                new UserShortDto(event.getInitiator().getId(), event.getInitiator().getName()),
+                confirmedRequests,
+                views
+        );
+    }
+
+    public static EventShortDto toShortDto(Event event, long confirmedRequests, long views) {
+        return toShortDto(
+                event,
+                new CategoryDto(event.getCategory().getId(), event.getCategory().getName()),
+                new UserShortDto(event.getInitiator().getId(), event.getInitiator().getName()),
+                confirmedRequests,
+                views
+        );
+    }
 }
