@@ -152,9 +152,9 @@ public class EventServiceImpl implements EventService {
             event.setCategory(category);
         }
 
-        if (dto.getStateAction() == StateAction.SEND_TO_REVIEW) {
+        if (StateAction.SEND_TO_REVIEW.name().equals(dto.getStateAction())) {
             event.setState(EventState.PENDING);
-        } else if (dto.getStateAction() == StateAction.CANCEL_REVIEW) {
+        } else if (StateAction.CANCEL_REVIEW.name().equals(dto.getStateAction())) {
             event.setState(EventState.CANCELED);
         }
 
@@ -220,13 +220,14 @@ public class EventServiceImpl implements EventService {
                     .orElseThrow(() -> new NotFoundException("Категория с id=" + dto.getCategory() + " не найдена"));
             event.setCategory(category);
         }
-        if (dto.getStateAction() == StateAction.PUBLISH_EVENT) {
+
+        if (StateAction.PUBLISH_EVENT.name().equals(dto.getStateAction())) {
             if (event.getState() != EventState.PENDING) {
                 throw new ConflictException("Можно публиковать только события в состоянии ожидания публикации");
             }
             event.setState(EventState.PUBLISHED);
             event.setPublishedOn(LocalDateTime.now());
-        } else if (dto.getStateAction() == StateAction.REJECT_EVENT) {
+        } else if (StateAction.REJECT_EVENT.name().equals(dto.getStateAction())) {
             if (event.getState() == EventState.PUBLISHED) {
                 throw new ConflictException("Нельзя отклонить уже опубликованное событие");
             }
