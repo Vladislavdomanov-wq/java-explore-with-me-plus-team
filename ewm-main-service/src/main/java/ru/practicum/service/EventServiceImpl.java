@@ -190,9 +190,19 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
+        if (dto.getEventDate() != null) {
+            if (dto.getEventDate().isBefore(LocalDateTime.now())) {
+                throw new ValidationException("Дата события не может быть в прошлом");
+            }
+            event.setEventDate(dto.getEventDate());
+        }
+
         if (dto.getStateAction() == StateAction.PUBLISH_EVENT) {
             if (event.getState() != EventState.PENDING) {
                 throw new ConflictException("Можно публиковать только события в состоянии ожидания публикации");
+            }
+            if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+                throw new ConflictException("Дата начала события должна быть не ранее чем за час от даты публикации");
             }
             event.setState(EventState.PUBLISHED);
             event.setPublishedOn(LocalDateTime.now());
