@@ -51,12 +51,12 @@ public class StatsClient {
                 .queryParam("unique", Boolean.TRUE.equals(unique));
 
         if (uris != null && !uris.isEmpty()) {
-            builder.queryParam("uris", uris.toArray());   // ?uris=/a&uris=/b
+            builder.queryParam("uris", uris.toArray());
         }
 
         try {
             ResponseEntity<List<ViewStats>> response = restTemplate.exchange(
-                    builder.toUriString(),
+                    builder.build().encode().toUri(),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<>() {}
