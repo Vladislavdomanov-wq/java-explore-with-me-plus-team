@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.model.Event;
 import ru.practicum.model.EventState;
 
@@ -27,4 +29,14 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     List<Event> findAllByCategoryId(Long categoryId);
 
     boolean existsByCategoryId(Long categoryId);
+
+    // Метод Романа для подписок
+    @Query("SELECT e FROM Event e " +
+            "WHERE e.state = :state " +
+            "AND e.initiator.id IN (" +
+            "  SELECT s.author.id FROM Subscription s WHERE s.subscriber.id = :subscriberId" +
+            ") " +
+            "ORDER BY e.eventDate")
+    List<Event> findPublishedEventsOfFollowedAuthors(@Param("subscriberId") Long subscriberId,
+                                                     @Param("state") EventState state);
 }
