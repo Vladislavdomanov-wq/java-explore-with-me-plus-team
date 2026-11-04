@@ -7,6 +7,7 @@ import ru.practicum.dto.SubscriptionDto;
 import ru.practicum.dto.SubscriptionStatsDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.SubscriptionMapper;
 import ru.practicum.model.Subscription;
 import ru.practicum.model.User;
@@ -28,7 +29,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionDto subscribe(Long subscriberId, Long authorId) {
         if (subscriberId.equals(authorId)) {
-            throw new ConflictException("User cannot subscribe to himself");
+            throw new ValidationException("User cannot subscribe to himself");
         }
         User subscriber = userRepository.findById(subscriberId)
                 .orElseThrow(() -> new NotFoundException("Subscriber not found: " + subscriberId));
